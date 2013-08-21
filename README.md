@@ -26,8 +26,8 @@ select  some_function()
 from    dual
 /
 ... but this strategy does not work in general as
-1) stored procedures do not return values and can instead have OUT parameters, and
-2) stored functions do not necessarily return scalar values, as required if used in SQL queries.
+1. stored procedures do not return values and can instead have OUT parameters, and
+2. stored functions do not necessarily return scalar values, as required if used in SQL queries.
 
 Additionally, there is no way to configure either component to invoke a stored procedure or somehow subclass either one and override some of its behaviors to accomplish this goal.
 In short, both components utilize the JDBC PreparedStatement class which is only good for single SQL DML statements enumerated above.
@@ -35,12 +35,12 @@ Only CallableStatements can be used to call stored procedures and so either impl
 
 The optimal solution is to be able to use a component that allows a developer to specify all of the elements of this problem, namely:
 
-* The name of the stored procedure
-* Whether or not the stored procedure is a function
-* The set of parameters including their
-** Names
-** Modes (IN, OUT, or INOUT)
-** Types
+1. The name of the stored procedure
+2. Whether or not the stored procedure is a function
+3. The set of parameters including their
+ a. Names
+ b. Modes (IN, OUT, or INOUT)
+ c. Types
 
 Luckily, Spring provides a relatively simple means calling stored procedures using the org.springframework.jdbc.object.StoredProcedure class.
 Moreover, Camel allows for beans to participate in routes and send messages to them.
