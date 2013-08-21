@@ -1,0 +1,147 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                           http://camel.apache.org/schema/spring
+                           http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <bean id="oracleDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+        <property name="url" value="${oracle.db.url}"/>
+        <property name="username" value="${oracle.db.username}"/>
+        <property name="password" value="${oracle.db.password}"/>
+    </bean>
+
+    <bean id="functionWithNoParams" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="oracleDataSource"/>
+        <constructor-arg name="storedProcedureName" value="meaning_of_the_universe"/>
+        <constructor-arg name="isFunction" value="true"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="foo"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="integer"/>
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="functionWithOneParam" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="oracleDataSource"/>
+        <constructor-arg name="storedProcedureName" value="greeting"/>
+        <constructor-arg name="isFunction" value="true"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="foo"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="varchar"/>
+                </map>
+                <map>
+                    <entry key="name" value="name"/>
+                    <entry key="mode" value="in"/>
+                    <entry key="type" value="varchar"/>
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="procedureWithOneOutParam" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="oracleDataSource"/>
+        <constructor-arg name="storedProcedureName" value="sum_two_numbers"/>
+        <constructor-arg name="isFunction" value="false"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="a"/>
+                    <entry key="mode" value="in"/>
+                    <entry key="type" value="integer"/>
+                </map>
+                <map>
+                    <entry key="name" value="b"/>
+                    <entry key="mode" value="in"/>
+                    <entry key="type" value="integer"/>
+                </map>
+                <map>
+                    <entry key="name" value="c"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="integer"/>
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="procedureWithMultipleOutParams" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="oracleDataSource"/>
+        <constructor-arg name="storedProcedureName" value="sum_and_diff_of_two_numbers"/>
+        <constructor-arg name="isFunction" value="false"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="a"/>
+                    <entry key="mode" value="in"/>
+                    <entry key="type" value="integer"/>
+                </map>
+                <map>
+                    <entry key="name" value="b"/>
+                    <entry key="mode" value="in"/>
+                    <entry key="type" value="integer"/>
+                </map>
+                <map>
+                    <entry key="name" value="c"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="integer"/>
+                </map>
+                <map>
+                    <entry key="name" value="d"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="integer"/>
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <camelContext xmlns="http://camel.apache.org/schema/spring">
+        <!--
+        <route id="callFunctionWithNoParams">
+            <from uri="timer://kickoff?period=1000"/>
+            <to uri="bean:functionWithNoParams"/>
+            <log message="${body}"/>
+        </route>
+
+        <route id="callFunctionWithOneParam">
+            <from uri="timer://kickoff?period=1000"/>
+            <setHeader headerName="name">
+                <constant>Dan</constant>
+            </setHeader>
+            <to uri="bean:functionWithOneParam"/>
+            <log message="${body}"/>
+        </route>
+
+        <route id="callProcedureWithOneOutParam">
+            <from uri="timer://kickoff?period=1000"/>
+            <setHeader headerName="a">
+                <constant>35</constant>
+            </setHeader>
+            <setHeader headerName="b">
+                <constant>7</constant>
+            </setHeader>
+            <to uri="bean:procedureWithOneOutParam"/>
+            <log message="${body}"/>
+        </route>
+        -->
+
+        <route id="callProcedureWithMultipleOutParams">
+            <from uri="timer://kickoff?period=1000"/>
+            <setHeader headerName="a">
+                <constant>35</constant>
+            </setHeader>
+            <setHeader headerName="b">
+                <constant>7</constant>
+            </setHeader>
+            <to uri="bean:procedureWithMultipleOutParams"/>
+            <log message="${body}"/>
+        </route>
+    </camelContext>
+</beans>
