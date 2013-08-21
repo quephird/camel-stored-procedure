@@ -6,9 +6,8 @@ This is a trivial project which demonstrates how a Spring bean can be configured
 
 Steps to setting up your environment and running this demonstration:
 
-1a. Find an available Oracle database environment...
-                    OR
-1b. ... install Oracle XE 11g. Go to http://www.oracle.com/technetwork/database/express-edition/overview/index.html to download it and its documentation.
+1. Find an available Oracle database environment, OR
+   install Oracle XE 11g. Go to http://www.oracle.com/technetwork/database/express-edition/overview/index.html to download it and its documentation.
 2. Run the SQL scripts in the src/main/sql directory to create the example procedures and functions.
 3. Set the database URL, username, and password in the spring-beans.xml file in src/main/resources.
 4. Run 'mvn clean install'.
@@ -38,9 +37,9 @@ The optimal solution is to be able to use a component that allows a developer to
 1. The name of the stored procedure
 2. Whether or not the stored procedure is a function
 3. The set of parameters including their
- a. Names
- b. Modes (IN, OUT, or INOUT)
- c. Types
+  * Names
+  * Modes (IN, OUT, or INOUT)
+  * Types
 
 Luckily, Spring provides a relatively simple means calling stored procedures using the org.springframework.jdbc.object.StoredProcedure class.
 Moreover, Camel allows for beans to participate in routes and send messages to them.
