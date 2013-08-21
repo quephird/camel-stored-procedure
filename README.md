@@ -48,7 +48,7 @@ At a minimum, there are two requirements for this bean:
 * exposing of a constructor which allows for the passage of all needed configuration parameters
 * a method which can get a reference to the inbound org.apache.camel.Exchange object to retrieve the actual values of the parameters to be passed to the stored procedure
 
-## Running a Camel route
+## Usage and running
 
 The example Spring bean XML configuration file has a bean definition for an Oracle datasource;
 you will need to supply the database URL, username, and password:
@@ -121,6 +121,10 @@ INFO: Pre-instantiating singletons in org.springframework.beans.factory.support.
 [Camel (camel-1) thread #0 - timer://kickoff] INFO callFunctionWithNoParams - {foo=42}
 [Camel (camel-1) thread #0 - timer://kickoff] INFO callFunctionWithNoParams - {foo=42}
 ```
+
+In general, you should be able to use any number of parameter modes and types.
+The types that are supported correspond with the ones enumerated in java.sql.Types: http://docs.oracle.com/javase/7/docs/api/java/sql/Types.html
+It should be noted that I have not tested this with the ref cursors, only simple scalar types.
 
 ## Useful links
 
