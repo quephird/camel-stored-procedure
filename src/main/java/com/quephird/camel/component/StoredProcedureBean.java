@@ -19,7 +19,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * This bean is
+ * This bean can be used in an Apache Camel route,
+ * and can be configured to invoke a stored procedure.
  */
 public class StoredProcedureBean extends StoredProcedure {
     private final static String PARAMETER_MODE_IN = "in";
@@ -29,7 +30,7 @@ public class StoredProcedureBean extends StoredProcedure {
     private Set<String> inParameterNames = new HashSet<String>();
 
     /**
-     *
+     * Constructor
      *
      * @param dataSource
      * @param storedProcedureName
@@ -40,7 +41,7 @@ public class StoredProcedureBean extends StoredProcedure {
     public StoredProcedureBean(final DataSource dataSource,
                                final String storedProcedureName,
                                final boolean isFunction,
-                               final List<Map<String, String>> parameters) throws Exception {
+                               final List<Map<String, String>> parameters) throws IllegalArgumentException {
         setDataSource(dataSource);
    	    setSql(storedProcedureName);
         setFunction(isFunction);
@@ -51,10 +52,21 @@ public class StoredProcedureBean extends StoredProcedure {
             String parameterMode = parameter.get("mode");
             String parameterType = parameter.get("type");
 
+            if (parameterName == null || parameterMode == null || parameterType == null) {
+                throw new IllegalArgumentException("Parameter not sufficiently configured.");
+            }
+
             // ... Map the declared type of each parameter to the SQL type defined in java.sql.Types...
-            Class sqlTypesClass = java.sql.Types.class;
-            Field f = sqlTypesClass.getField(parameterType.toUpperCase());
-            int sqlType = (Integer)f.get(sqlTypesClass);
+            int sqlType;
+            try {
+                Class sqlTypesClass = java.sql.Types.class;
+                Field f = sqlTypesClass.getField(parameterType.toUpperCase());
+                sqlType = (Integer)f.get(sqlTypesClass);
+            } catch (NoSuchFieldException nsfe) {
+                throw new IllegalArgumentException("Invalid parameter type.");
+            } catch (IllegalAccessException iae) {
+                throw new IllegalArgumentException("Unable to derive parameter type.");
+            }
 
             // ... and select the correct Spring JDBC SqlParameter class according to the inbound mode.
             if (PARAMETER_MODE_IN.equalsIgnoreCase(parameterMode)) {
@@ -66,7 +78,7 @@ public class StoredProcedureBean extends StoredProcedure {
             } else if (PARAMETER_MODE_INOUT.equalsIgnoreCase(parameterMode)) {
                 declareParameter(new SqlInOutParameter(parameterName, sqlType));
             } else {
-                throw new Exception("Invalid parameter mode.");
+                throw new IllegalArgumentException("Invalid parameter mode.");
             }
         }
 
