@@ -1,0 +1,331 @@
+<beans xmlns="http://www.springframework.org/schema/beans"  
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+			   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+                           http://camel.apache.org/schema/spring
+                           http://camel.apache.org/schema/spring/camel-spring.xsd">
+  
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <value>file:database.properties</value>
+        </property>
+    </bean>
+
+
+    <bean id="oracleDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+        <property name="url" value="${oracle.db.url}"/>
+        <property name="username" value="${oracle.db.username}"/>
+        <property name="password" value="${oracle.db.password}"/>
+    </bean>
+
+    <bean id="mssqlDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+        <property name="url" value="${mssql.db.url}"/>
+        <property name="username" value="${mssql.db.username}"/>
+        <property name="password" value="${mssql.db.password}"/>
+    </bean>
+
+
+    <bean id="functionWithNoParams" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="oracleDataSource"/>
+        <constructor-arg name="sqlTypesClassName" value="oracle.jdbc.OracleTypes"/>   <!-- java.sql.Types, oracle.jdbc.OracleTypes -->
+        <constructor-arg name="storedProcedureName" value="SYSDATE"/>
+        <constructor-arg name="isFunction" value="true"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="current_date"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="date"/>
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="procedureWithOneParamNoOutput" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="oracleDataSource"/>
+        <constructor-arg name="sqlTypesClassName" value="java.sql.Types"/>   <!-- java.sql.Types, oracle.jdbc.OracleTypes -->
+        <constructor-arg name="storedProcedureName" value="pack_test.one_param"/>
+        <constructor-arg name="isFunction" value="false"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="i"/>
+                    <entry key="mode" value="in"/>
+                    <entry key="type" value="integer"/>
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+     
+    <bean id="procedureWithInOutParam" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="oracleDataSource"/>
+        <constructor-arg name="sqlTypesClassName" value="oracle.jdbc.OracleTypes"/>   <!-- java.sql.Types, oracle.jdbc.OracleTypes -->
+        <constructor-arg name="storedProcedureName" value="pack_test.inout_param"/>
+        <constructor-arg name="isFunction" value="false"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="i"/>
+                    <entry key="mode" value="inout"/>
+                    <entry key="type" value="number"/>
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+     
+    <bean id="functionWithInOutParamFromBody" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="oracleDataSource"/>
+        <constructor-arg name="sqlTypesClassName" value="oracle.jdbc.OracleTypes"/>   <!-- java.sql.Types, oracle.jdbc.OracleTypes -->
+        <constructor-arg name="storedProcedureName" value="pack_test.inout_param"/>
+        <constructor-arg name="isFunction" value="true"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="return_val"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="number"/>
+                </map>
+                <map>
+                    <entry key="name" value="i"/>
+                    <entry key="mode" value="inout"/>
+                    <entry key="type" value="number"/>
+                    <entry key="valueFrom" value="body"/>   <!-- (optional) "body" means value comes from message body; any other text refers to a header name that the value will come from -->
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+     
+    <bean id="functionWithInOutParamFromHdr" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="oracleDataSource"/>
+        <constructor-arg name="sqlTypesClassName" value="oracle.jdbc.OracleTypes"/>   <!-- java.sql.Types, oracle.jdbc.OracleTypes -->
+        <constructor-arg name="storedProcedureName" value="pack_test.inout_param"/>
+        <constructor-arg name="isFunction" value="true"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="returned_val"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="number"/>
+                </map>
+                <map>
+                    <entry key="name" value="i"/>
+                    <entry key="mode" value="inout"/>
+                    <entry key="type" value="number"/>
+                    <entry key="valueFrom" value="j"/>   <!-- (optional) "body" means value comes from message body; any other text refers to a header name that the value will come from -->
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+     
+    <bean id="procedureWithOutCursor" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="oracleDataSource"/>
+        <constructor-arg name="sqlTypesClassName" value="oracle.jdbc.OracleTypes"/>   <!-- java.sql.Types, oracle.jdbc.OracleTypes -->
+        <constructor-arg name="storedProcedureName" value="pack_test.cursor_out"/>
+        <constructor-arg name="isFunction" value="false"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="crsr"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="cursor"/>  <!-- use "cursor" for Oracle, "ResultSet" for others -->
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="oneColRowMapper" class="org.springframework.jdbc.core.SingleColumnRowMapper"/>
+    <bean id="functionReturningCursor" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="oracleDataSource"/>
+        <constructor-arg name="sqlTypesClassName" value="oracle.jdbc.OracleTypes"/>   <!-- java.sql.Types, oracle.jdbc.OracleTypes -->
+        <constructor-arg name="storedProcedureName" value="pack_test.return_cursor"/>
+        <constructor-arg name="isFunction" value="true"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="returned_crsr"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="cursor"/>
+                    <entry key="rowMapper" value-ref="oneColRowMapper"/>   <!-- if not given will default to org.springframework.jdbc.core.ColumnMapRowMapper -->
+                </map>
+                <map>
+                    <entry key="name" value="row_count"/>
+                    <entry key="mode" value="inout"/>
+                    <entry key="type" value="integer"/>
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="functionWithOutCursors" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="oracleDataSource"/>
+        <constructor-arg name="sqlTypesClassName" value="oracle.jdbc.OracleTypes"/>   <!-- java.sql.Types, oracle.jdbc.OracleTypes -->
+        <constructor-arg name="storedProcedureName" value="pack_test.func_cursors_out"/>
+        <constructor-arg name="isFunction" value="true"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="return_val"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="number"/>
+                </map>
+                <map>
+                    <entry key="name" value="users"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="cursor"/>
+                </map>
+                <map>
+                    <entry key="name" value="roles"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="cursor"/>
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+
+
+    <bean id="mssqlFunctionWithParam" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="mssqlDataSource"/>
+        <constructor-arg name="sqlTypesClassName" value="java.sql.Types"/>   <!-- java.sql.Types, oracle.jdbc.OracleTypes -->
+        <constructor-arg name="storedProcedureName" value="master.sys.fn_varbintohexstr"/>
+        <constructor-arg name="isFunction" value="true"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="result"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="nvarchar"/>
+                </map>
+                <map>
+                    <entry key="name" value="@pbinin"/>
+                    <entry key="mode" value="in"/>
+                    <entry key="type" value="integer"/>
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="mssqlProcReturningResultSet" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="mssqlDataSource"/>
+        <constructor-arg name="sqlTypesClassName" value="java.sql.Types"/>   <!-- java.sql.Types, oracle.jdbc.OracleTypes -->
+        <constructor-arg name="storedProcedureName" value="master.sys.sp_spaceused"/>
+        <constructor-arg name="isFunction" value="false"/>
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="@objname"/>
+                    <entry key="mode" value="in"/>
+                    <entry key="type" value="nvarchar"/>
+                </map>
+                <map>
+                    <entry key="name" value="rs"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="ResultSet"/>
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean id="mssqlProcMultResultSetsAndReturnVal" class="com.quephird.camel.component.StoredProcedureBean">
+        <constructor-arg name="dataSource" ref="mssqlDataSource"/>
+        <constructor-arg name="sqlTypesClassName" value="java.sql.Types"/>   <!-- java.sql.Types, oracle.jdbc.OracleTypes -->
+        <constructor-arg name="storedProcedureName" value="master.sys.sp_spaceused"/>
+        <constructor-arg name="isFunction" value="true"/>   <!-- even though this isn't truly a FUNCTION, need to call it as such, to get return_code -->
+        <constructor-arg name="parameters">
+            <list>
+                <map>
+                    <entry key="name" value="return_code"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="integer"/>
+                </map>
+                <map>
+                    <entry key="name" value="rs1"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="ResultSet"/>
+                </map>
+                <map>
+                    <entry key="name" value="rs2"/>
+                    <entry key="mode" value="out"/>
+                    <entry key="type" value="ResultSet"/>
+                </map>
+            </list>
+        </constructor-arg>
+    </bean>
+
+     
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+
+        <route id="storedProcBeanTests">
+            <description>Camel route to test StoredProcedureBean</description>
+        
+            <from uri="timer://kickoff?period=60000" />
+        
+            <log message="======== functionWithNoParams :" />
+            <to uri="bean:functionWithNoParams" />
+            <!-- <to uri="log:input?showAll=true"/> -->
+            <log message="HEADERS: $simple{headers}" />
+            <log message="BODY:    ${body}" />
+        
+            <log message="======== procedureWithOneParamNoOutput :" />
+            <setHeader headerName="i"><constant>111</constant></setHeader>
+            <to uri="bean:procedureWithOneParamNoOutput" />
+            <log message="HEADERS: $simple{headers}" />
+            <log message="BODY:    ${body}" />
+        
+            <log message="======== procedureWithInOutParam :" />
+            <setHeader headerName="i"><constant>222</constant></setHeader>
+            <to uri="bean:procedureWithInOutParam" />
+            <log message="HEADERS: $simple{headers}" />
+            <log message="BODY:    ${body}" />
+        
+            <log message="======== functionWithInOutParamFromBody :" />
+            <setBody><constant>333</constant></setBody>
+            <to uri="bean:functionWithInOutParamFromBody" />
+            <log message="HEADERS: $simple{headers}" />
+            <log message="BODY:    ${body}" />
+        
+            <log message="======== functionWithInOutParamFromHdr :" />
+            <setHeader headerName="j"><constant>5</constant></setHeader>
+            <to uri="bean:functionWithInOutParamFromHdr" />
+            <log message="HEADERS: $simple{headers}" />
+            <log message="BODY:    ${body}" />
+        
+            <log message="======== procedureWithOutCursor :" />
+            <to uri="bean:procedureWithOutCursor" />
+            <log message="HEADERS: $simple{headers}" />
+            <log message="BODY:    ${body}" />
+        
+            <log message="======== functionReturningCursor :" />
+            <setHeader headerName="row_count"><constant>2</constant></setHeader>
+            <to uri="bean:functionReturningCursor" />
+            <log message="HEADERS: $simple{headers}" />
+            <log message="BODY:    ${body}" />
+        
+            <log message="======== functionWithOutCursors :" />
+            <to uri="bean:functionWithOutCursors" />
+            <log message="HEADERS: $simple{headers}" />
+            <log message="BODY:    ${body}" />
+        
+        
+            <log message="======== mssqlFunctionWithParam :" />
+            <setHeader headerName="@pbinin"><constant>255</constant></setHeader>
+            <to uri="bean:mssqlFunctionWithParam" />
+            <log message="HEADERS: $simple{headers}" />
+            <log message="BODY:    ${body}" />
+        
+            <log message="======== mssqlProcReturningResultSet :" />
+            <setHeader headerName="@objname"><constant>master.dbo.spt_values</constant></setHeader>
+            <to uri="bean:mssqlProcReturningResultSet" />
+            <log message="HEADERS: $simple{headers}" />
+            <log message="BODY:    ${body}" />
+
+            <log message="======== mssqlProcMultResultSetsAndReturnVal :" />
+            <to uri="bean:mssqlProcMultResultSetsAndReturnVal" />
+            <log message="HEADERS: $simple{headers}" />
+            <log message="BODY:    ${body}" />
+
+        </route>
+        
+    </camelContext>
+</beans>

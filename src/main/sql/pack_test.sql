@@ -1,0 +1,101 @@
+CREATE OR REPLACE PACKAGE pack_test IS
+
+  
+PROCEDURE one_param(i IN NUMBER)
+;
+
+PROCEDURE inout_param(i IN OUT NUMBER)
+;
+
+FUNCTION inout_param(i IN OUT NUMBER)
+RETURN NUMBER
+;
+
+PROCEDURE cursor_out(c OUT SYS_REFCURSOR)
+;
+
+FUNCTION return_cursor(row_count IN OUT INTEGER)
+RETURN SYS_REFCURSOR
+;
+
+FUNCTION func_cursors_out(users OUT SYS_REFCURSOR, roles OUT SYS_REFCURSOR)
+RETURN NUMBER
+;
+
+
+END pack_test;
+/
+CREATE OR REPLACE PACKAGE BODY pack_test IS
+
+
+PROCEDURE one_param(i IN NUMBER)
+IS
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(i);
+END;
+
+PROCEDURE inout_param(i IN OUT NUMBER)
+IS
+BEGIN
+  i := i * 2;
+END;
+
+FUNCTION inout_param(i IN OUT NUMBER)
+RETURN NUMBER
+IS
+BEGIN
+  i := i * 2;
+  RETURN i * 3;
+END;
+
+PROCEDURE cursor_out(c OUT SYS_REFCURSOR)
+IS
+BEGIN
+  OPEN c FOR
+  SELECT *
+  FROM   DBA_JOBS
+  WHERE  ROWNUM <= 3
+  ;
+END;
+
+FUNCTION return_cursor(row_count IN OUT INTEGER)
+RETURN SYS_REFCURSOR
+IS
+  crsr SYS_REFCURSOR;
+BEGIN
+  
+  OPEN crsr FOR
+  SELECT DISTINCT blocks
+  FROM   DBA_FREE_SPACE
+  WHERE  ROWNUM <= row_count
+  ;
+  
+  SELECT COUNT(*) INTO row_count
+  FROM   DBA_FREE_SPACE
+  ;
+  
+  RETURN crsr;
+END;
+
+FUNCTION func_cursors_out(users OUT SYS_REFCURSOR, roles OUT SYS_REFCURSOR)
+RETURN NUMBER
+IS
+BEGIN
+  
+  OPEN users FOR
+  SELECT *
+  FROM   DBA_USERS
+  WHERE  ROWNUM <= 5
+  ;
+  
+  OPEN roles FOR
+  SELECT *
+  FROM   DBA_ROLES
+  WHERE  ROWNUM <= 5
+  ;
+  
+  RETURN 3.14;
+END;
+
+END pack_test;
+/

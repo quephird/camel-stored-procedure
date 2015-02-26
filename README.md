@@ -124,7 +124,18 @@ INFO: Pre-instantiating singletons in org.springframework.beans.factory.support.
 
 In general, you should be able to use any number of parameter modes and types.
 The types that are supported correspond with the ones enumerated in java.sql.Types: http://docs.oracle.com/javase/7/docs/api/java/sql/Types.html
-It should be noted that I have not tested this with the ref cursors, only simple scalar types.
+~~It should be noted that I have not tested this with the ref cursors, only simple scalar types.~~ *see update below*
+
+### Update ###
+
+- New constructor arg: sqlTypesClassName 
+  - Must be specified: java.sql.Types, oracle.jdbc.OracleTypes
+  - By specifying oracle.jdbc.OracleTypes, a param type of CURSOR can be used
+- New "ResultSet" parameter type recognized
+  - Allows returning result set(s) from databases such as SQL Server
+- New attributes for parameters (in addition to name, mode, and type):
+  - valueFrom (optional) - "body" means the param value comes from the Camel message body; any other text means the value will come from a header by that name
+  - rowMapper (optional) - for CURSOR and ResultSet types, specifies the RowMapper to use; defaults to ColumnMapRowMapper 
 
 ## Useful links
 
