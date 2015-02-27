@@ -4,26 +4,31 @@
 
     <groupId>com.quephird.camel.component</groupId>
     <artifactId>camel-stored-procedure</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>camel-stored-procedure</name>
 
     <properties>
-        <camel.version>2.11.1</camel.version>
+        <camel.version>2.14.1</camel.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
-        <junit.version>4.11</junit.version>
-        <slf4j.version>1.7.5</slf4j.version>
-        <oracle.jdbc.version>11.2.0.3</oracle.jdbc.version>
+        <junit.version>4.12</junit.version>
+        <slf4j.version>1.7.10</slf4j.version>
+        <oracle.jdbc.version>11.2.0.4</oracle.jdbc.version>
+        <mssql.jdbc.version>4.1.5605.100</mssql.jdbc.version>
     </properties>
 
     <repositories>
-        <!-- Needed for Oracle JDBC driver -->
+        <!-- Needed for JDBC drivers -->
+        <!-- To install file to the repo:  mvn install:install-file -DlocalRepositoryPath=repo -DcreateChecksum=true -Dpackaging=jar -Dfile=[your-jar] -DgroupId=[...] -DartifactId=[...] -Dversion=[...] -->
+        <!--                        e.g.:  mvn install:install-file -DlocalRepositoryPath=repo -DcreateChecksum=true -Dpackaging=jar -Dfile=ojdbc6.jar -DgroupId=com.oracle -DartifactId=ojdbc6 -Dversion=11.2.0.4 -->
+        <!--                        e.g.:  mvn install:install-file -DlocalRepositoryPath=repo -DcreateChecksum=true -Dpackaging=jar -Dfile=sqljdbc41.jar -DgroupId=com.microsoft.sqlserver -DartifactId=sqljdbc41 -Dversion=4.1.5605.100 -->
         <repository>
-            <id>some-local-repo</id>
-            <url>http://some.local.repo.com/maven2</url>
+            <id>project-local-repo</id>
+            <url>file://${project.basedir}/repo</url>     <!-- <url>${project.baseUri}repo</url> doesn't work under Windows -->
             <releases>
                 <enabled>true</enabled>
+                <checksumPolicy>ignore</checksumPolicy>
             </releases>
             <snapshots>
                 <enabled>true</enabled>
@@ -64,12 +69,18 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- You will need to download this artifact from Oracle's site
-             and install it manually into a local Maven repo. -->
+        <!-- You will need to download these JDBC driver artifacts and 
+             install manually into local Maven repo (see comments above). -->
         <dependency>
             <groupId>com.oracle</groupId>
             <artifactId>ojdbc6</artifactId>
             <version>${oracle.jdbc.version}</version>
+        </dependency>
+        <dependency>
+            <!-- If using Windows authentication, need to SET MAVEN_OPTS="-Djava.library.path=PATH-TO-sqljdbc_auth.dll" -->
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>sqljdbc41</artifactId>
+            <version>${mssql.jdbc.version}</version>
         </dependency>
     </dependencies>
 
@@ -79,9 +90,6 @@
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-maven-plugin</artifactId>
                 <version>${camel.version}</version>
-                <configuration>
-                    <applicationContextUri>spring-beans.xml</applicationContextUri>
-                </configuration>
             </plugin>
         </plugins>
     </build>
